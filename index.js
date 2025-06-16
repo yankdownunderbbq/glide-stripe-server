@@ -9,6 +9,7 @@ app.use(express.json());
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+//My Stripe endpoint
 app.post('/connection_token', async (req, res) => {
   try {
     const connectionToken = await stripe.terminal.connectionTokens.create();
@@ -19,6 +20,12 @@ app.post('/connection_token', async (req, res) => {
   }
 });
 
+//basic route handler
+app.get('/', (req, res) => {
+  res.send('✅ Stripe server is running!');
+});
+
+//Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
