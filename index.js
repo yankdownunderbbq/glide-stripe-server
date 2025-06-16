@@ -20,6 +20,28 @@ app.post('/connection-token', async (req, res) => {
   }
 });
 
+// Endpoint to create a PaymentIntent
+app.post('/create-payment-intent', async (req, res) => {
+  const { amount, currency, description } = req.body;
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+      description,
+      payment_method_types: ['card_present'], // this is for Terminal!
+    });
+
+    res.json({
+      paymentIntentId: paymentIntent.id,
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    console.error('Error creating payment intent:', err);
+    res.status(500).json({ error: 'Failed to create payment intent' });
+  }
+});
+
 //basic route handler
 app.get('/', (req, res) => {
   res.send('✅ Stripe server is running!');
