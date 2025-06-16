@@ -1,4 +1,4 @@
-const express = require('express');
+n const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
 require('dotenv').config();
@@ -10,13 +10,13 @@ app.use(express.json());
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 //My Stripe endpoint
-app.post('/connection_token', async (req, res) => {
+app.post('/connection-token', async (req, res) => {
   try {
     const connectionToken = await stripe.terminal.connectionTokens.create();
-    res.json(connectionToken);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to create token' });
+    res.json({ secret: connectionToken.secret });
+  } catch (error) {
+    console.error('Error creating connection token:' error);
+    res.status(500).json({ error: 'Failed to create connection token' });
   }
 });
 
