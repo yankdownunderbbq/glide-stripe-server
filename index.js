@@ -15,7 +15,7 @@ app.post('/connection-token', async (req, res) => {
     const connectionToken = await stripe.terminal.connectionTokens.create();
     res.json({ secret: connectionToken.secret });
   } catch (error) {
-    console.error('Error creating connection token:' error);
+    console.error('Error creating connection token:', error);
     res.status(500).json({ error: 'Failed to create connection token' });
   }
 });
