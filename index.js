@@ -9,6 +9,15 @@ app.use(express.json());
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+// === Serve static files from the "public" directory ===
+// This allows your HTML test page (for the Stripe Terminal simulator) to load in the browser
+app.use(express.static(path.join(__dirname, 'public')));
+
+// === Route to serve the homepage (test UI) ===
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 //My Stripe endpoint
 app.post('/connection-token', async (req, res) => {
   try {
