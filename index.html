@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stripe Terminal Simulator</title>
+    <script src="https://js.stripe.com/terminal/v1/"></script>
+  </head>
+  <body>
+    <h1>Stripe Terminal Simulator</h1>
+    <button id="connect-reader">Connect to Simulated Reader</button>
+    <button id="collect-payment">Collect Payment</button>
+
+    <script>
+      const terminal = StripeTerminal.create({
+        onFetchConnectionToken: async () => {
+          const res = await fetch('/connection-token', { method: 'POST' });
+          const data = await res.json();
+          return data.secret;
+        }
+      });
+
+      let reader;
+
+      document.getElementById('connect-reader').addEventListener('click', async () => {
+        const result = await terminal.discoverReaders({ simulated: true });
+        if (result.error) {
+          console.error('Failed to discover:', result.error);
+        } else if (result.discoveredReaders.length === 0) {
+          console.log('No readers found');
+        } else {
+          const connectResult = await terminal.connectReader(result.discoveredReaders[0]);
+          if (connectResult.error) {
+            console.error('Failed to connect:', connectResult.error);
+          } else {
+            reader = connectResult.reader;
+            console.log('Connected to reader:', reader.label);
+          }
+        }
+      });
+
+      document.getElementById('collect-payment').addEventListener('click', async () => {
+        const intentRes = await fetch('/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: 2200,
+            currency: 'aud',
+            description: 'Brisket Sandwich'
+          })
+        });
+        const intentData = await intentRes.json();
+
+        const result = await terminal.collectPaymentMethod(intentData.clientSecret);
+        if (result.error) {
+          console.error('collectPaymentMethod error:', result.error);
+          return;
+        }
+
+        const confirmResult = await terminal.processPayment(result.paymentIntent);
+        if (confirmResult.error) {
+          console.error('processPayment error:', confirmResult.error);
+        } else {
+          console.log('Payment successful:', confirmResult.paymentIntent.id);
+          alert('Payment succeeded!');
+        }
+      });
+    </script>
+  </body>
+</html>
