@@ -15,6 +15,10 @@
           const res = await fetch('/connection-token', { method: 'POST' });
           const data = await res.json();
           return data.secret;
+        },
+        onUnexpectedReaderDisconnect: () => {
+          console.warn("Reader disconnected unexpectedly");
+          alert("The reader disconnected. Please reconnect and try again.");
         }
       });
 
