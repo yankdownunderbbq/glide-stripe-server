@@ -8,6 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/ping', (req, res) => {
+  res.status(200).send('OK');
+});
+
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // === Serve static files from the "public" directory ===
