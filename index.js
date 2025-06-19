@@ -57,9 +57,9 @@ app.post('/create-payment-intent', async (req, res) => {
 });
 
 //basic route handler
-app.get('/', (req, res) => {
-  res.send('✅ Stripe server is running!');
-});
+//app.get('/', (req, res) => {
+//  res.send('✅ Stripe server is running!');
+//});
 
 //Start the server
 const PORT = process.env.PORT || 3000;
