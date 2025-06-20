@@ -23,6 +23,43 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
+app.get('/pay', async (req, res) => {
+  const { quote_id, amount, mode } = req.query;
+
+  // Validate input
+  if (!quote_id || !amount || !mode) {
+    return res.status(400).send('Missing required parameters');
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'aud', // or change if you're not in Australia
+          product_data: {
+            name: mode === 'deposit' ? 'Deposit Payment' : 'Full Catering Payment',
+          },
+          unit_amount: parseInt(amount), // cents
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      metadata: {
+        quote_id,
+        payment_mode: mode
+      },
+      success_url: 'https://glide-stripe-server.onrender.com/success', // placeholder
+      cancel_url: 'https://glide-stripe-server.onrender.com/cancel',   // placeholder
+    });
+
+    res.redirect(session.url);
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).send('Something went wrong creating a payment session.');
+  }
+});
+
 //My Stripe endpoint
 app.post('/connection-token', async (req, res) => {
   try {
