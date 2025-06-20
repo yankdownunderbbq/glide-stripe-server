@@ -45,7 +45,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
           amount_paid: paymentIntent.amount_received,
           currency: paymentIntent.currency,
           status: paymentIntent.status,
-          receipt_url: charge?.receipt_url || '',,
+          receipt_url: charge?.receipt_url || '',
           paid: paymentIntent.status === 'succeeded',
           payment_type: paymentType
         })
