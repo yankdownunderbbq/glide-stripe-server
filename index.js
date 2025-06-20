@@ -2,6 +2,7 @@ const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
 const path = require('path');
+const processedPayments = new Set();
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
@@ -30,6 +31,14 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
       const paymentIntentId = session.payment_intent;
       const quoteId = session.metadata.quote_id;
       const paymentType = session.metadata.payment_mode || 'unspecified';
+
+      if (processedPayments.has(paymentIntent.id)) {
+  console.log('🔁 Duplicate payment detected — skipping');
+  res.status(200).send('Duplicate event ignored');
+  return;
+}
+
+processedPayments.add(paymentIntent.id);
 
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       const charge = paymentIntent.charges?.data?.[0];
