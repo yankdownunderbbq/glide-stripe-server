@@ -33,7 +33,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
       const paymentType = session.metadata.payment_mode || 'unspecified';
 
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      const charge = paymentIntent.charges.data[0];
+      const charge = paymentIntent.charges?.data?.[0];
 
       // Send to Glide
       await fetch('https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/a994a439-e558-4b2c-bf0f-0332482b2bf1', {
@@ -45,7 +45,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
           amount_paid: paymentIntent.amount_received,
           currency: paymentIntent.currency,
           status: paymentIntent.status,
-          receipt_url: paymentIntent.charges?.data?.[0]?.receipt_url || '',
+          receipt_url: charge?.receipt_url || '',,
           paid: paymentIntent.status === 'succeeded',
           payment_type: paymentType
         })
