@@ -3,6 +3,7 @@ const Stripe = require('stripe');
 const cors = require('cors');
 const path = require('path');
 const processedPayments = new Set();
+const { v4: uuidv4 } = require('uuid'); 
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
@@ -47,7 +48,8 @@ processedPayments.add(paymentIntent.id);
       await fetch('https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/a994a439-e558-4b2c-bf0f-0332482b2bf1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 
-                   'Idempotency-Key': uuidv4() // One-off unique key},
+                   'Idempotency-Key': uuidv4() // One-off unique key
+                 },
         body: JSON.stringify({
           quote_id: quoteId,
           payment_intent_id: paymentIntent.id,
