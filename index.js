@@ -45,7 +45,7 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
           amount_paid: paymentIntent.amount_received,
           currency: paymentIntent.currency,
           status: paymentIntent.status,
-          receipt_url: charge?.receipt_url || '',
+          receipt_url: paymentIntent.charges?.data?.[0]?.receipt_url || '',
           paid: paymentIntent.status === 'succeeded',
           payment_type: paymentType
         })
@@ -54,9 +54,11 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
       console.log('✅ Payment recorded and sent to Glide');
 
       res.status(200).send('Webhook processed');
+      return;
     } catch (err) {
       console.error('❌ Failed to process payment or send to Glide:', err.message);
       res.status(500).send('Internal error');
+      return;
     }
   } else {
     res.status(200).send('Ignored event');
