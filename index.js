@@ -3,7 +3,6 @@ const Stripe = require('stripe');
 const cors = require('cors');
 const path = require('path');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch'); // install if needed
 require('dotenv').config();
 
 const app = express();
