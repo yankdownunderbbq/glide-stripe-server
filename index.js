@@ -110,8 +110,8 @@ app.get('/pay', async (req, res) => {
         quote_id,
         payment_mode: mode
       },
-      success_url: 'https://yankdownunderbbq.glide.page/dl/ab0312?id=${quote_id}', 
-      cancel_url: 'https://yankdownunderbbq.glide.page/dl/ab0312?id=${quote_id}',  
+      success_url: `https://yankdownunderbbq.glide.page/dl/ab0312?id=${quoteId}`, 
+      cancel_url: `https://yankdownunderbbq.glide.page/dl/ab0312?id=${quoteId}`,  
     });
 
     res.redirect(session.url);
