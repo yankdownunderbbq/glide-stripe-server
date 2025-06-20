@@ -7,60 +7,6 @@ const fetch = require('node-fetch'); // install if needed
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.get('/ping', (req, res) => {
-  res.status(200).send('OK');
-});
-
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-
-// === Serve static files from the "public" directory ===
-// This allows your HTML test page (for the Stripe Terminal simulator) to load in the browser
-app.use(express.static(path.join(__dirname, 'public')));
-
-// === Route to serve the homepage (test UI) ===
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
-});
-
-app.get('/pay', async (req, res) => {
-  const { quote_id, amount, mode } = req.query;
-
-  // Validate input
-  if (!quote_id || !amount || !mode) {
-    return res.status(400).send('Missing required parameters');
-  }
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'aud', // or change if you're not in Australia
-          product_data: {
-            name: mode === 'deposit' ? 'Deposit Payment' : 'Full Catering Payment',
-          },
-          unit_amount: parseInt(amount), // cents
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      metadata: {
-        quote_id,
-        payment_mode: mode
-      },
-      success_url: 'https://yankdownunderbbq.glide.page/dl/ab0312?id=${quote_id}', 
-      cancel_url: 'https://yankdownunderbbq.glide.page/dl/ab0312?id=${quote_id}',  
-    });
-
-    res.redirect(session.url);
-  } catch (error) {
-    console.error('Stripe error:', error);
-    res.status(500).send('Something went wrong creating a payment session.');
-  }
-});
 
 app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -117,6 +63,61 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
   }
 
   res.status(200).send('Received');
+}); 
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/ping', (req, res) => {
+  res.status(200).send('OK');
+});
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+// === Serve static files from the "public" directory ===
+// This allows your HTML test page (for the Stripe Terminal simulator) to load in the browser
+app.use(express.static(path.join(__dirname, 'public')));
+
+// === Route to serve the homepage (test UI) ===
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+app.get('/pay', async (req, res) => {
+  const { quote_id, amount, mode } = req.query;
+
+  // Validate input
+  if (!quote_id || !amount || !mode) {
+    return res.status(400).send('Missing required parameters');
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'aud', // or change if you're not in Australia
+          product_data: {
+            name: mode === 'deposit' ? 'Deposit Payment' : 'Full Catering Payment',
+          },
+          unit_amount: parseInt(amount), // cents
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      metadata: {
+        quote_id,
+        payment_mode: mode
+      },
+      success_url: 'https://yankdownunderbbq.glide.page/dl/ab0312?id=${quote_id}', 
+      cancel_url: 'https://yankdownunderbbq.glide.page/dl/ab0312?id=${quote_id}',  
+    });
+
+    res.redirect(session.url);
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).send('Something went wrong creating a payment session.');
+  }
 });
 
 //My Stripe endpoint
