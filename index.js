@@ -33,16 +33,16 @@ app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async 
       const quoteId = session.metadata.quote_id;
       const paymentType = session.metadata.payment_mode || 'unspecified';
 
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const charge = paymentIntent.charges?.data?.[0];
+
       if (processedPayments.has(paymentIntent.id)) {
-  console.log('🔁 Duplicate payment detected — skipping');
-  res.status(200).send('Duplicate event ignored');
-  return;
+        console.log('🔁 Duplicate payment detected — skipping');
+        res.status(200).send('Duplicate event ignored');
+        return;
 }
 
 processedPayments.add(paymentIntent.id);
-
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      const charge = paymentIntent.charges?.data?.[0];
 
       // Send to Glide
       await fetch('https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/a994a439-e558-4b2c-bf0f-0332482b2bf1', {
