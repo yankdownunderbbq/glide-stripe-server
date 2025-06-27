@@ -305,9 +305,9 @@ function handlePaymentSuccess(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
- sendToGlide(payload)
-    .then(() => console.log(`✅ Sent success to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
-    .catch(err => console.error('❌ Failed to send success to Glide:', err.message));
+sendToGlide(payload, 'terminal')
+  .then(() => console.log(`✅ Sent success to Glide for order: ${payload.order_id}`))
+  .catch(err => console.error('❌ Failed to send success to Glide:', err.message));
 }
 
 function handlePaymentFailure(paymentIntent) {
@@ -341,6 +341,7 @@ function handlePaymentFailure(paymentIntent) {
   .catch(err => {
     console.error('❌ Glide webhook error:', err.response?.data || err.message);
   });
+}
 
 function handlePaymentCanceled(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
@@ -361,9 +362,9 @@ function handlePaymentCanceled(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  sendToGlide(payload)
-    .then(() => console.log(`✅ Sent cancellation to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
-    .catch(err => console.error('❌ Failed to send cancellation to Glide:', err.message));
+  sendToGlide(payload, 'terminal')
+  .then(() => console.log(`✅ Sent cancellation to Glide for order: ${payload.order_id}`))
+  .catch(err => console.error('❌ Failed to send cancellation to Glide:', err.message));
 }
 
 function handleReaderError(data) {
