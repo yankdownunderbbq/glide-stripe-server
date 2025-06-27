@@ -6,6 +6,7 @@ const path = require('path');
 const processedPayments = new Set();
 const { v4: uuidv4 } = require('uuid'); 
 const bodyParser = require('body-parser');
+const { verifyGlideAuth } = require('./authMiddleware');
 require('dotenv').config();
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -168,7 +169,7 @@ app.post('/create-payment-intent', async (req, res) => {
 // ✅ This endpoint is used to create a PaymentIntent for a card_present payment (Stripe Terminal).
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
-app.post('/terminal-charge', express.json(), async (req, res) => {
+app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
   const { order_id, amount, reader_id } = req.body;
 
   if (!order_id || !amount || !reader_id) {
