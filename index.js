@@ -16,6 +16,7 @@ const GLIDE_QUOTE_WEBHOOK_TOKEN = process.env.GLIDE_QUOTE_WEBHOOK_TOKEN;
 const GLIDE_TERMINAL_WEBHOOK_TOKEN = process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN;
 
 function sendToGlide(payload, type = 'quote') {
+  console.log('sendToGlide called');
   const url =
     type === 'terminal'
       ? process.env.GLIDE_TERMINAL_WEBHOOK_URL
