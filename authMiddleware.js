@@ -6,7 +6,7 @@ function verifyGlideAuth(req, res, next) {
   }
 
   const token = authHeader.split(' ')[1];
-  if (token !== process.env.GLIDE_BEARER_TOKEN) {
+  if (token !== process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN) {
     return res.status(403).json({ error: 'Unauthorized request' });
   }
 
