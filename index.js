@@ -186,7 +186,7 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
       metadata: { order_id }
     }, {
       idempotencyKey: 'terminal-charge-${order_id}'
-      );
+    });
 
     console.log(`✅ Created PaymentIntent: ${paymentIntent.id}`);
 
