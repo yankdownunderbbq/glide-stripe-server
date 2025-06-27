@@ -26,6 +26,10 @@ function sendToGlide(payload, type = 'quote') {
       ? process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN
       : process.env.GLIDE_QUOTE_WEBHOOK_TOKEN;
 
+  //debug logs
+  console.log('📡 Glide webhook URL:', url);
+console.log('🔐 Glide token:', token ? 'Present ✅' : 'Missing ❌');
+
   return axios.post(url, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
