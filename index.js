@@ -12,31 +12,22 @@ require('dotenv').config();
 const GLIDE_WEBHOOK_URL = process.env.GLIDE_WEBHOOK_URL;
 const GLIDE_BEARER_TOKEN = process.env.GLIDE_BEARER_TOKEN;
 
-function sendToGlide(payload) {
-  const token = process.env.GLIDE_BEARER_TOKEN;
-  const url = process.env.GLIDE_WEBHOOK_URL || GLIDE_WEBHOOK_URL;
+function sendToGlide(payload, type = 'quote') {
+  const url =
+    type === 'terminal'
+      ? process.env.GLIDE_TERMINAL_WEBHOOK_URL
+      : process.env.GLIDE_QUOTE_WEBHOOK_URL;
 
-  console.log('📤 Sending to Glide...');
-  console.log('🔐 Glide Webhook URL:', url);
-  console.log('🔐 Glide Bearer Token Exists:', !!token);
+  const token =
+    type === 'terminal'
+      ? process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN
+      : process.env.GLIDE_QUOTE_WEBHOOK_TOKEN;
 
   return axios.post(url, payload, {
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  })
-  .then((res) => {
-    console.log('✅ Sent to Glide:', res.status);
-    return res;
-  })
-  .catch((err) => {
-    if (err.response) {
-      console.error('❌ Failed to send to Glide:', err.response.status, err.response.data);
-    } else {
-      console.error('❌ Error sending to Glide:', err.message);
-    }
-    throw err;
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
   });
 }
 
