@@ -9,6 +9,18 @@ const bodyParser = require('body-parser');
 const { verifyGlideAuth } = require('./authMiddleware');
 require('dotenv').config();
 
+const GLIDE_WEBHOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
+const GLIDE_BEARER_TOKEN = process.env.GLIDE_BEARER_TOKEN;
+
+function sendToGlide(payload) {
+  return axios.post(GLIDE_WEBHOOK_URL, payload, {
+    headers: {
+      'Authorization': `Bearer ${GLIDE_BEARER_TOKEN}`,
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
@@ -275,7 +287,7 @@ function handlePaymentSuccess(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  axios.post(GLIDE_WEBHOOK_URL, payload)
+ sendToGlide(payload)
     .then(() => console.log(`✅ Sent success to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
     .catch(err => console.error('❌ Failed to send success to Glide:', err.message));
 }
@@ -299,7 +311,7 @@ function handlePaymentFailure(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  axios.post(GLIDE_WEBHOOK_URL, payload)
+  sendToGlide(payload)
     .then(() => console.log(`✅ Sent failure to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
     .catch(err => console.error('❌ Failed to send failure to Glide:', err.message));
 }
@@ -323,7 +335,7 @@ function handlePaymentCanceled(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  axios.post(GLIDE_WEBHOOK_URL, payload)
+  sendToGlide(payload)
     .then(() => console.log(`✅ Sent cancellation to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
     .catch(err => console.error('❌ Failed to send cancellation to Glide:', err.message));
 }
