@@ -266,7 +266,7 @@ app.use(cors());
 app.use(express.json());
 
 // Replace with your real Glide-trigger webhook URL
-const GLIDE_WEBHOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
+//HOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
 
 function handlePaymentSuccess(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
