@@ -183,7 +183,9 @@ app.post('/terminal-charge', express.json(), async (req, res) => {
       payment_method_types: ['card_present'],
       capture_method: 'automatic',
       metadata: { order_id }
-    });
+    }, {
+      idempotencyKey: 'terminal-charge-${order_id}'
+      );
 
     console.log(`✅ Created PaymentIntent: ${paymentIntent.id}`);
 
