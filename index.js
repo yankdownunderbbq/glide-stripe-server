@@ -316,9 +316,10 @@ function handlePaymentFailure(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  axios.post(process.env.GLIDE_WEBHOOK_URL, payload, {
+  await axios.post(process.env.GLIDE_WEBHOOK_URL, payload, {
     headers: {
       Authorization: `Bearer ${process.env.GLIDE_API_TOKEN}`
+      'Content-Type': 'application/json',
     }
   })
     .then(() => console.log(`✅ Sent failure to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
