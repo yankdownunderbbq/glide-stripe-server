@@ -297,6 +297,9 @@ function handlePaymentFailure(paymentIntent) {
   const isQuote = !!metadata.quote_id;
   const isOrder = !!metadata.order_id;
 
+  const failureReason = paymentIntent.last_payment_error?.message || 'Unknown reason';
+  const failureCode = paymentIntent.last_payment_error?.code || 'unknown_error';
+
   const payload = {
     status: 'failed',
     paid: false,
@@ -304,6 +307,8 @@ function handlePaymentFailure(paymentIntent) {
     amount_paid: 0,
     receipt_url: null,
     payment_intent_id: paymentIntent.id,
+    failure_reason: failureReason,
+    failure_code: failureCode,
     payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
     source: isQuote ? 'quote' : 'order',
     quote_id: isQuote ? metadata.quote_id : null,
@@ -311,7 +316,11 @@ function handlePaymentFailure(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  sendToGlide(payload)
+  axios.post(process.env.GLIDE_WEBHOOK_URL, payload, {
+    headers: {
+      Authorization: `Bearer ${process.env.GLIDE_API_TOKEN}`
+    }
+  })
     .then(() => console.log(`✅ Sent failure to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
     .catch(err => console.error('❌ Failed to send failure to Glide:', err.message));
 }
