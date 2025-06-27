@@ -166,6 +166,46 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
+
+// ✅ This endpoint is used to create a PaymentIntent for a card_present payment (Stripe Terminal).
+// It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
+// Triggered by Glide via webhook when an order is ready to be paid by card in-person.
+app.post('/terminal-charge', async (req, res) => {
+  const { order_id, amount, reader_id } = req.body;
+
+  if (!order_id || !amount || !reader_id) {
+    return res.status(400).json({ error: 'Missing order_id, amount, or reader_id' });
+  }
+
+  try {
+    // 1. Create the PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: parseInt(amount),
+      currency: 'aud',
+      payment_method_types: ['card_present'],
+      capture_method: 'automatic',
+      metadata: { order_id }
+    });
+
+    console.log(`✅ Created PaymentIntent: ${paymentIntent.id}`);
+
+    // 2. Start the payment on the specified reader
+    const result = await stripe.terminal.readers.processPaymentIntent(reader_id, {
+      payment_intent: paymentIntent.id
+    });
+
+    console.log(`🖥️ Sent payment to reader (${reader_id}):`, result.status);
+
+    res.status(200).json({
+      paymentIntentId: paymentIntent.id,
+      result: result
+    });
+  } catch (err) {
+    console.error('❌ Terminal charge failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 //basic route handler
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
