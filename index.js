@@ -9,8 +9,11 @@ const bodyParser = require('body-parser');
 const { verifyGlideAuth } = require('./authMiddleware');
 require('dotenv').config();
 
-const GLIDE_WEBHOOK_URL = process.env.GLIDE_WEBHOOK_URL;
-const GLIDE_BEARER_TOKEN = process.env.GLIDE_BEARER_TOKEN;
+const GLIDE_QUOTE_WEBHOOK_URL = process.env.GLIDE_QUOTE_WEBHOOK_URL;
+const GLIDE_TERMINAL_WEBHOOK_URL = process.env.GLIDE_TERMINAL_WEBHOOK_URL;
+
+const GLIDE_QUOTE_WEBHOOK_TOKEN = process.env.GLIDE_QUOTE_WEBHOOK_TOKEN;
+const GLIDE_TERMINAL_WEBHOOK_TOKEN = process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN;
 
 function sendToGlide(payload, type = 'quote') {
   const url =
