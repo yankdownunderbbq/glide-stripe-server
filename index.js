@@ -206,6 +206,73 @@ app.post('/terminal-charge', async (req, res) => {
   }
 });
 
+// This should already be set at the top
+const express = require('express');
+const app = express();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Add raw body middleware ONLY for this route
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('⚠️ Webhook signature verification failed:', err.message);
+    return res.sendStatus(400);
+  }
+
+  // Handle different event types
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      handlePaymentSuccess(event.data.object);
+      break;
+
+    case 'payment_intent.payment_failed':
+      handlePaymentFailure(event.data.object);
+      break;
+
+    case 'payment_intent.canceled':
+      handlePaymentCanceled(event.data.object);
+      break;
+
+    case 'terminal.reader.action_failed':
+      handleReaderError(event.data.object);
+      break;
+
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  res.sendStatus(200);
+});
+
+function handlePaymentSuccess(paymentIntent) {
+  const orderId = paymentIntent.metadata.order_id;
+  console.log(`✅ Payment successful for order ${orderId}`);
+  // TODO: update Glide or DB
+}
+
+function handlePaymentFailure(paymentIntent) {
+  const orderId = paymentIntent.metadata.order_id;
+  const reason = paymentIntent.last_payment_error?.message;
+  console.log(`❌ Payment failed for order ${orderId}: ${reason}`);
+}
+
+function handlePaymentCanceled(paymentIntent) {
+  const orderId = paymentIntent.metadata.order_id;
+  console.log(`⚠️ Payment canceled for order ${orderId}`);
+}
+
+function handleReaderError(data) {
+  console.log('🚨 Terminal reader error:', data);
+}
+
 //basic route handler
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
