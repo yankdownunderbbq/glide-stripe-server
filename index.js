@@ -334,15 +334,13 @@ function handlePaymentFailure(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  axios.post(process.env.GLIDE_WEBHOOK_URL, payload, {
-    headers: {
-      Authorization: `Bearer ${process.env.GLIDE_API_TOKEN}`,
-      'Content-Type': 'application/json',
-    }
+ sendToGlide(payload, 'terminal')
+  .then(response => {
+    console.log('✅ Glide webhook success:', response.data);
   })
-    .then(() => console.log(`✅ Sent failure to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
-    .catch(err => console.error('❌ Failed to send failure to Glide:', err.message));
-}
+  .catch(err => {
+    console.error('❌ Glide webhook error:', err.response?.data || err.message);
+  });
 
 function handlePaymentCanceled(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
