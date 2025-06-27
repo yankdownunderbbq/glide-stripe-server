@@ -217,8 +217,9 @@ app.post('/terminal-charge', async (req, res) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_TERMINAL_WEBHOOK_SECRET
+      endpointSecret
     );
+    console.log('📬 Received event:', event.type);
   } catch (err) {
     console.error('⚠️ Webhook signature verification failed:', err.message);
     return res.sendStatus(400);
@@ -332,8 +333,6 @@ function handleReaderError(data) {
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
 //});
-
-console.log('📬 Received event:', event.type);
 
 //Start the server
 const PORT = process.env.PORT || 3000;
