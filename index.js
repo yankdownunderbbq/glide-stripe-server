@@ -50,7 +50,7 @@ processedPayments.add(paymentIntent.id);
       // Send to Glide
       await fetch('https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/a994a439-e558-4b2c-bf0f-0332482b2bf1', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 
+        headers: { 'Content-Type': 'axpplication/json', 
                    'Idempotency-Key': uuidv4() // One-off unique key
                  },
         body: JSON.stringify({
@@ -80,9 +80,6 @@ processedPayments.add(paymentIntent.id);
 
   res.status(200).send('Received');
 }); 
-
-app.use(cors());
-app.use(express.json());
 
 app.get('/ping', (req, res) => {
   res.status(200).send('OK');
@@ -249,6 +246,9 @@ app.post('/terminal-charge', async (req, res) => {
 
   res.sendStatus(200);
 });
+
+app.use(cors());
+app.use(express.json());
 
 // Replace with your real Glide-trigger webhook URL
 const GLIDE_WEBHOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
