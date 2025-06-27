@@ -15,7 +15,7 @@ const GLIDE_BEARER_TOKEN = process.env.GLIDE_BEARER_TOKEN;
 function sendToGlide(payload) {
   return axios.post(GLIDE_WEBHOOK_URL, payload, {
     headers: {
-      'Authorization': `Bearer ${GLIDE_BEARER_TOKEN}`,
+      'Authorization': `Bearer ${process.env.GLIDE_BEARER_TOKEN}`,
       'Content-Type': 'application/json'
     }
   });
