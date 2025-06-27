@@ -316,7 +316,7 @@ function handlePaymentFailure(paymentIntent) {
     timestamp: new Date().toISOString()
   };
 
-  await axios.post(process.env.GLIDE_WEBHOOK_URL, payload, {
+  axios.post(process.env.GLIDE_WEBHOOK_URL, payload, {
     headers: {
       Authorization: `Bearer ${process.env.GLIDE_API_TOKEN}`
       'Content-Type': 'application/json',
