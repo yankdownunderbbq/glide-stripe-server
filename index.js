@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const { verifyGlideAuth } = require('./authMiddleware');
 require('dotenv').config();
 
-const GLIDE_WEBHOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
+const GLIDE_WEBHOOK_URL = process.env.GLIDE_WEBHOOK_URL;
 const GLIDE_BEARER_TOKEN = process.env.GLIDE_BEARER_TOKEN;
 
 function sendToGlide(payload) {
