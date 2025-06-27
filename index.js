@@ -1,3 +1,4 @@
+const axios = require('axios'); // Make sure axios is installed
 const express = require('express');
 const Stripe = require('stripe');
 const cors = require('cors');
@@ -206,11 +207,6 @@ app.post('/terminal-charge', async (req, res) => {
   }
 });
 
-// This should already be set at the top
-const express = require('express');
-const app = express();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
 // Add raw body middleware ONLY for this route
 app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -252,27 +248,85 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   res.sendStatus(200);
 });
 
+// Replace with your real Glide-trigger webhook URL
+const GLIDE_WEBHOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
+
 function handlePaymentSuccess(paymentIntent) {
-  const orderId = paymentIntent.metadata.order_id;
-  console.log(`✅ Payment successful for order ${orderId}`);
-  // TODO: update Glide or DB
+  const metadata = paymentIntent.metadata || {};
+  const isQuote = !!metadata.quote_id;
+  const isOrder = !!metadata.order_id;
+
+  const payload = {
+    status: 'succeeded',
+    paid: true,
+    currency: paymentIntent.currency,
+    amount_paid: paymentIntent.amount_received,
+    receipt_url: paymentIntent.charges?.data[0]?.receipt_url || null,
+    payment_intent_id: paymentIntent.id,
+    payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
+    source: isQuote ? 'quote' : 'order',
+    quote_id: isQuote ? metadata.quote_id : null,
+    order_id: isOrder ? metadata.order_id : null,
+    timestamp: new Date().toISOString()
+  };
+
+  axios.post(GLIDE_WEBHOOK_URL, payload)
+    .then(() => console.log(`✅ Sent success to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
+    .catch(err => console.error('❌ Failed to send success to Glide:', err.message));
 }
 
 function handlePaymentFailure(paymentIntent) {
-  const orderId = paymentIntent.metadata.order_id;
-  const reason = paymentIntent.last_payment_error?.message;
-  console.log(`❌ Payment failed for order ${orderId}: ${reason}`);
+  const metadata = paymentIntent.metadata || {};
+  const isQuote = !!metadata.quote_id;
+  const isOrder = !!metadata.order_id;
+
+  const payload = {
+    status: 'failed',
+    paid: false,
+    currency: paymentIntent.currency,
+    amount_paid: 0,
+    receipt_url: null,
+    payment_intent_id: paymentIntent.id,
+    payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
+    source: isQuote ? 'quote' : 'order',
+    quote_id: isQuote ? metadata.quote_id : null,
+    order_id: isOrder ? metadata.order_id : null,
+    timestamp: new Date().toISOString()
+  };
+
+  axios.post(GLIDE_WEBHOOK_URL, payload)
+    .then(() => console.log(`✅ Sent failure to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
+    .catch(err => console.error('❌ Failed to send failure to Glide:', err.message));
 }
 
 function handlePaymentCanceled(paymentIntent) {
-  const orderId = paymentIntent.metadata.order_id;
-  console.log(`⚠️ Payment canceled for order ${orderId}`);
+  const metadata = paymentIntent.metadata || {};
+  const isQuote = !!metadata.quote_id;
+  const isOrder = !!metadata.order_id;
+
+  const payload = {
+    status: 'canceled',
+    paid: false,
+    currency: paymentIntent.currency,
+    amount_paid: 0,
+    receipt_url: null,
+    payment_intent_id: paymentIntent.id,
+    payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
+    source: isQuote ? 'quote' : 'order',
+    quote_id: isQuote ? metadata.quote_id : null,
+    order_id: isOrder ? metadata.order_id : null,
+    timestamp: new Date().toISOString()
+  };
+
+  axios.post(GLIDE_WEBHOOK_URL, payload)
+    .then(() => console.log(`✅ Sent cancellation to Glide for ${payload.source}: ${payload.quote_id || payload.order_id}`))
+    .catch(err => console.error('❌ Failed to send cancellation to Glide:', err.message));
 }
 
 function handleReaderError(data) {
   console.log('🚨 Terminal reader error:', data);
+  // You could optionally notify Glide or store logs elsewhere
 }
-
 //basic route handler
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
