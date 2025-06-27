@@ -8,9 +8,11 @@ const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
 const app = express();
 
-app.post('/stripe-webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/webhook-quotes', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
 
   let event;
@@ -85,8 +87,6 @@ app.use(express.json());
 app.get('/ping', (req, res) => {
   res.status(200).send('OK');
 });
-
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // === Serve static files from the "public" directory ===
 // This allows your HTML test page (for the Stripe Terminal simulator) to load in the browser
@@ -208,7 +208,7 @@ app.post('/terminal-charge', async (req, res) => {
 });
 
 // Add raw body middleware ONLY for this route
-app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  app.post('/webhook-terminal', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_TERMINAL_WEBHOOK_SECRET;
 
@@ -332,6 +332,8 @@ function handleReaderError(data) {
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
 //});
+
+console.log('📬 Received event:', event.type);
 
 //Start the server
 const PORT = process.env.PORT || 3000;
