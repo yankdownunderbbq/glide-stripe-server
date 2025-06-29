@@ -390,14 +390,12 @@ function handleReaderError(data) {
   // You could optionally notify Glide or store logs elsewhere
 }
 
-app.use((req, res, next) => {
-  console.warn(`❗ 404 - Unknown route hit: ${req.method} ${req.originalUrl}`);
-  res.status(404).send('Not Found');
-});
 //basic route handler
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
 //});
+
+console.log(`🔍 PORT from env: ${process.env.PORT}`);
 
 //Start the server
 const PORT = process.env.PORT || 3000;
