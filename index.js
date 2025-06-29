@@ -162,6 +162,11 @@ app.get('/pay', async (req, res) => {
   }
 });
 
+app.use((req, res, next) => {
+  console.log(`📡 Received request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 //My Stripe endpoint
 app.post('/connection-token', async (req, res) => {
   try {
@@ -200,13 +205,12 @@ app.post('/create-payment-intent', async (req, res) => {
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
-  
   console.log('📦 Incoming req.body:', req.body);
  
-  const data = req.body.body || req.body;
-  const { order_id, amount, reader_id, attempt_number } = data;
+  const payload = req.body.body || req.body;
+  const { order_id, amount, reader_id, attempt_number } = payload;
 
-  if (!order_id || !amount || !reader_id || !attempt_number) {
+  if (!order_id || !amount || !reader_id || !attempt_number === undefined) {
     return res.status(400).json({ error: 'Missing order_id, amount, reader_id, or attempt_number' });
   }
 
