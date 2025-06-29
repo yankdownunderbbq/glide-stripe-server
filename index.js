@@ -215,7 +215,7 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
       capture_method: 'automatic',
       metadata: { 
         order_id,
-        attempt_number: attempt_number.toStrong(), //store as string for safety
+        attempt_number: attempt_number.toString(), //store as string for safety
         payment_type: 'terminal'
       }
     }, {
