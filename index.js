@@ -200,9 +200,9 @@ app.post('/create-payment-intent', async (req, res) => {
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
-  const { order_id, amount, reader_id } = req.body;
+  const { order_id, amount, reader_id, attempt_number } = req.body;
 
-  if (!order_id || !amount || !reader_id) {
+  if (!order_id || !amount || !reader_id || !attempt_number) {
     return res.status(400).json({ error: 'Missing order_id, amount, or reader_id' });
   }
 
@@ -213,9 +213,13 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
       currency: 'aud',
       payment_method_types: ['card_present'],
       capture_method: 'automatic',
-      metadata: { order_id }
+      metadata: { 
+        order_id,
+        attempt_number: attempt_number.toStrong(), //store as string for safety
+        payment_type: 'terminal'
+      }
     }, {
-      idempotencyKey: 'terminal-charge-${order_id}'
+      idempotencyKey: 'terminal-charge-${order_id}-${attempt_number}'
     });
 
     console.log(`✅ Created PaymentIntent: ${paymentIntent.id}`);
@@ -299,6 +303,7 @@ function handlePaymentSuccess(paymentIntent) {
     receipt_url: paymentIntent.charges?.data[0]?.receipt_url || null,
     payment_intent_id: paymentIntent.id,
     payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
+    attempt_number: parseInt(metadata.attempt_number || '1', 10),
     source: isQuote ? 'quote' : 'order',
     quote_id: isQuote ? metadata.quote_id : null,
     order_id: isOrder ? metadata.order_id : null,
@@ -328,6 +333,7 @@ function handlePaymentFailure(paymentIntent) {
     failure_reason: failureReason,
     failure_code: failureCode,
     payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
+    attempt_number: parseInt(metadata.attempt_number || '1', 10),
     source: isQuote ? 'quote' : 'order',
     quote_id: isQuote ? metadata.quote_id : null,
     order_id: isOrder ? metadata.order_id : null,
@@ -356,6 +362,7 @@ function handlePaymentCanceled(paymentIntent) {
     receipt_url: null,
     payment_intent_id: paymentIntent.id,
     payment_type: metadata.payment_type || (isOrder ? 'terminal' : 'full'),
+    attempt_number: parseInt(metadata.attempt_number || '1', 10),
     source: isQuote ? 'quote' : 'order',
     quote_id: isQuote ? metadata.quote_id : null,
     order_id: isOrder ? metadata.order_id : null,
