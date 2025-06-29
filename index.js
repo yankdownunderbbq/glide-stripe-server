@@ -206,20 +206,13 @@ app.post('/create-payment-intent', async (req, res) => {
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
-  console.log('📡 HIT /terminal-charge');
-  console.log('🔐 Headers:', JSON.stringify(req.headers, null, 2));
-  console.log('📥 Raw req.body:', JSON.stringify(req.body, null, 2));
-  
-  const raw = req.body;
-  const payload = raw.body || raw;
-
-  console.log('📦 Terminal charge payload:', JSON.stringify(payload, null, 2));
-  
-  const { order_id, amount, reader_id, attempt_number } = payload;
+  const { order_id, amount, reader_id, attempt_number } = req.body;
 
   if (!order_id || !amount || !reader_id || !attempt_number) {
     return res.status(400).json({ error: 'Missing order_id, amount, reader_id, or attempt_number' });
   }
+
+  console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
 
   try {
     // 1. Create the PaymentIntent
@@ -230,7 +223,7 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
       capture_method: 'automatic',
       metadata: { 
         order_id,
-        attempt_number: attempt_number.toString(), //store as string for safety
+        attempt_number: attempt_number.toString(),
         payment_type: 'terminal'
       }
     }, {
@@ -243,6 +236,18 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
     const result = await stripe.terminal.readers.processPaymentIntent(reader_id, {
       payment_intent: paymentIntent.id
     });
+
+    console.log(`🖥️ Sent payment to reader (${reader_id}):`, result.status);
+
+    res.status(200).json({
+      paymentIntentId: paymentIntent.id,
+      result: result
+    });
+  } catch (err) {
+    console.error('❌ Terminal charge failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
     console.log(`🖥️ Sent payment to reader (${reader_id}):`, result.status);
 
