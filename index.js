@@ -249,18 +249,6 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
   }
 });
 
-    console.log(`🖥️ Sent payment to reader (${reader_id}):`, result.status);
-
-    res.status(200).json({
-      paymentIntentId: paymentIntent.id,
-      result: result
-    });
-  } catch (err) {
-    console.error('❌ Terminal charge failed:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Add raw body middleware ONLY for this route
   app.post('/webhook-terminal', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
