@@ -206,6 +206,10 @@ app.post('/create-payment-intent', async (req, res) => {
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
+  console.log('📡 HIT /terminal-charge');
+  console.log('🔐 Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('📥 Raw req.body:', JSON.stringify(req.body, null, 2));
+  
   const raw = req.body;
   const payload = raw.body || raw;
 
@@ -296,7 +300,6 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
 });
 
 app.use(cors());
-app.use(express.json());
 
 // Replace with your real Glide-trigger webhook URL
 //HOOK_URL = 'https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/6d579e4a-8c20-48f1-a6fa-361be0cbd0e3';
