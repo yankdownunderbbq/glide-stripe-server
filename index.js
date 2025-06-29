@@ -206,16 +206,16 @@ app.post('/create-payment-intent', async (req, res) => {
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
+  console.log('📡 Received request: POST /terminal-charge');
+  console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
+
   const { order_id, amount, reader_id, attempt_number } = req.body;
 
   if (!order_id || !amount || !reader_id || !attempt_number) {
     return res.status(400).json({ error: 'Missing order_id, amount, reader_id, or attempt_number' });
   }
 
-  console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
-
   try {
-    // 1. Create the PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: parseInt(amount),
       currency: 'aud',
@@ -232,7 +232,6 @@ app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) =
 
     console.log(`✅ Created PaymentIntent: ${paymentIntent.id}`);
 
-    // 2. Start the payment on the specified reader
     const result = await stripe.terminal.readers.processPaymentIntent(reader_id, {
       payment_intent: paymentIntent.id
     });
