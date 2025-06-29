@@ -380,6 +380,11 @@ function handleReaderError(data) {
   console.log('🚨 Terminal reader error:', data);
   // You could optionally notify Glide or store logs elsewhere
 }
+
+app.use((req, res, next) => {
+  console.warn(`❗ 404 - Unknown route hit: ${req.method} ${req.originalUrl}`);
+  res.status(404).send('Not Found');
+});
 //basic route handler
 //app.get('/', (req, res) => {
 //  res.send('✅ Stripe server is running!');
