@@ -208,7 +208,7 @@ app.post('/create-payment-intent', async (req, res) => {
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, async (req, res) => {
   console.log('📦 Incoming req.body:', req.body);
-  console.log('📦 Raw request body:', req.body);
+  console.log('📦 Raw request body:', JSON.stringify(req.body, null, 2) || 'EMPTY BODY');
  
   const payload = req.body.body || req.body;
   const { order_id, amount, reader_id, attempt_number } = payload;
