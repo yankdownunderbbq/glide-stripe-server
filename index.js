@@ -45,8 +45,6 @@ console.log('🔐 Glide token:', token ? 'Present ✅' : 'Missing ❌');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-const app = express();
-
 app.post('/webhook-quotes', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
 
