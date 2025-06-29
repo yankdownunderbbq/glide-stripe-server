@@ -202,23 +202,18 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
-app.post('/test-body', (req, res) => {
-  console.log('🧪 Received request to /test-body');
-  console.log('🧪 Request body:', JSON.stringify(req.body, null, 2) || 'EMPTY');
-  res.json({ status: 'ok' });
-});
-
 // ✅ This endpoint is used to create a PaymentIntent for a card_present payment (Stripe Terminal).
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
-app.post('/terminal-charge', verifyGlideAuth, async (req, res) => {
-  console.log('📦 Incoming req.body:', req.body);
-  console.log('📦 Raw request body:', JSON.stringify(req.body, null, 2) || 'EMPTY BODY');
- 
-  const payload = req.body.body || req.body;
+app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
+  const raw = req.body;
+  const payload = raw.body || raw;
+
+  console.log('📦 Terminal charge payload:', JSON.stringify(payload, null, 2));
+  
   const { order_id, amount, reader_id, attempt_number } = payload;
 
-  if (!order_id || !amount || !reader_id || !attempt_number === undefined) {
+  if (!order_id || !amount || !reader_id || !attempt_number) {
     return res.status(400).json({ error: 'Missing order_id, amount, reader_id, or attempt_number' });
   }
 
