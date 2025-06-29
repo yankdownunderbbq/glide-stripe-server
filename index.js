@@ -200,10 +200,10 @@ app.post('/create-payment-intent', async (req, res) => {
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
 app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
-  const { order_id, amount, reader_id, attempt_number } = req.body;
+  const { order_id, amount, reader_id, attempt_number } = req.body.body || {};
 
   if (!order_id || !amount || !reader_id || !attempt_number) {
-    return res.status(400).json({ error: 'Missing order_id, amount, or reader_id' });
+    return res.status(400).json({ error: 'Missing order_id, amount, reader_id, or attempt_number' });
   }
 
   try {
