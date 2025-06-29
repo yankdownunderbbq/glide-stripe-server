@@ -1,5 +1,9 @@
 const axios = require('axios'); // Make sure axios is installed
 const express = require('express');
+
+const app = express();
+app.use(express.json());
+
 const Stripe = require('stripe');
 const cors = require('cors');
 const path = require('path');
@@ -8,8 +12,6 @@ const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { verifyGlideAuth } = require('./authMiddleware');
 require('dotenv').config();
-
-app.use(express.json());
 
 const GLIDE_QUOTE_WEBHOOK_URL = process.env.GLIDE_QUOTE_WEBHOOK_URL;
 const GLIDE_TERMINAL_WEBHOOK_URL = process.env.GLIDE_TERMINAL_WEBHOOK_URL;
