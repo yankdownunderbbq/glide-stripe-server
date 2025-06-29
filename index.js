@@ -202,6 +202,11 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
+app.post('/test-body', (req, res) => {
+  console.log('🧪 Received request to /test-body');
+  console.log('🧪 Request body:', JSON.stringify(req.body, null, 2) || 'EMPTY');
+  res.json({ status: 'ok' });
+});
 
 // ✅ This endpoint is used to create a PaymentIntent for a card_present payment (Stripe Terminal).
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
