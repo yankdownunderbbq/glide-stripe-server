@@ -208,10 +208,10 @@ app.post('/terminal-charge', express.json(), async (req, res) => {
   console.log(`📡 Received request: POST /terminal-charge`);
   console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
 
-  const { order_id, amount, reader_id, attempt_number, secret } = req.body;
+  const { order_id, amount, reader_id, attempt_number, session_patch_id } = req.body;
 
   // 🔐 Shared secret check
-  if (secret !== process.env.GLIDE_SHARED_SECRET) {
+  if (session_patch_id !== process.env.GLIDE_SHARED_SECRET) {
     console.warn('🔒 Unauthorized attempt to access /terminal-charge');
     return res.status(403).json({ error: 'Unauthorized request — invalid secret' });
   }
