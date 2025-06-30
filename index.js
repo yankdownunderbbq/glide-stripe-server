@@ -10,7 +10,6 @@ const path = require('path');
 const processedPayments = new Set();
 const { v4: uuidv4 } = require('uuid'); 
 const bodyParser = require('body-parser');
-const { verifyGlideAuth } = require('./authMiddleware');
 require('dotenv').config();
 
 const GLIDE_QUOTE_WEBHOOK_URL = process.env.GLIDE_QUOTE_WEBHOOK_URL;
@@ -205,33 +204,45 @@ app.post('/create-payment-intent', async (req, res) => {
 // ✅ This endpoint is used to create a PaymentIntent for a card_present payment (Stripe Terminal).
 // It immediately sends the PaymentIntent to a specified reader (e.g., WisePOS E) to collect payment.
 // Triggered by Glide via webhook when an order is ready to be paid by card in-person.
-app.post('/terminal-charge', verifyGlideAuth, express.json(), async (req, res) => {
-  console.log('📡 Received request: POST /terminal-charge');
+app.post('/terminal-charge', express.json(), async (req, res) => {
+  console.log(`📡 Received request: POST /terminal-charge`);
   console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
 
-  const { order_id, amount, reader_id, attempt_number } = req.body;
+  const { order_id, amount, reader_id, attempt_number, secret } = req.body;
 
+  // 🔐 Shared secret check
+  if (secret !== process.env.GLIDE_SHARED_SECRET) {
+    console.warn('🔒 Unauthorized attempt to access /terminal-charge');
+    return res.status(403).json({ error: 'Unauthorized request — invalid secret' });
+  }
+
+  // 🔍 Validate required fields
   if (!order_id || !amount || !reader_id || !attempt_number) {
     return res.status(400).json({ error: 'Missing order_id, amount, reader_id, or attempt_number' });
   }
 
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: parseInt(amount),
-      currency: 'aud',
-      payment_method_types: ['card_present'],
-      capture_method: 'automatic',
-      metadata: { 
-        order_id,
-        attempt_number: attempt_number.toString(),
-        payment_type: 'terminal'
+    // 1. Create the PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount: parseInt(amount),
+        currency: 'aud',
+        payment_method_types: ['card_present'],
+        capture_method: 'automatic',
+        metadata: {
+          order_id,
+          attempt_number: attempt_number.toString(),
+          payment_type: 'terminal'
+        }
+      },
+      {
+        idempotencyKey: `terminal-charge-${order_id}-${attempt_number}`
       }
-    }, {
-      idempotencyKey: `terminal-charge-${order_id}-${attempt_number}`
-    });
+    );
 
     console.log(`✅ Created PaymentIntent: ${paymentIntent.id}`);
 
+    // 2. Send to the reader
     const result = await stripe.terminal.readers.processPaymentIntent(reader_id, {
       payment_intent: paymentIntent.id
     });
