@@ -206,6 +206,7 @@ app.post('/create-payment-intent', async (req, res) => {
 app.post('/terminal-charge', express.json(), async (req, res) => {
   console.log(`📡 Received request: POST /terminal-charge`);
   console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
+  console.log('📬 /terminal-charge hit at', new Date().toISOString());
 
   const { order_id, amount, reader_id, attempt_number, session_patch_id } = req.body;
 
