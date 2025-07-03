@@ -329,6 +329,49 @@ app.post('/terminal-cancel', express.json(), async (req, res) => {
   }
 });
 
+app.post('/refund-stripe', express.json(), async (req, res) => {
+  const { payment_intent_id, refund_amount, refund_reason, timestamp } = req.body;
+
+  if (!payment_intent_id || !refund_amount) {
+    return res.status(400).json({ error: 'Missing payment_intent_id or refund_amount' });
+  }
+
+  try {
+    // Create refund
+    const refund = await stripe.refunds.create({
+      payment_intent: payment_intent_id,
+      amount: parseInt(refund_amount)
+    });
+
+    const pi = await stripe.paymentIntents.retrieve(payment_intent_id);
+    const metadata = pi.metadata || {};
+
+    const payload = {
+      status: 'refunded',
+      paid: false,
+      currency: refund.currency,
+      amount_paid: -Math.abs(refund.amount),
+      receipt_url: refund.receipt_url,
+      payment_intent_id: refund.payment_intent,
+      refund_reason: refund_reason || refund.reason || 'unspecified',
+      stripe_refund_id: refund.id,
+      payment_type: metadata.payment_type || 'terminal',
+      attempt_number: parseInt(metadata.attempt_number || '1', 10),
+      source: metadata.order_id ? 'order' : 'quote',
+      quote_id: metadata.quote_id || null,
+      order_id: metadata.order_id || null,
+      timestamp: timestamp || new Date().toISOString()
+    };
+
+    await sendToGlide(payload, 'terminal');
+
+    res.status(200).json({ success: true, refund_id: refund.id });
+  } catch (err) {
+    console.error('❌ Stripe refund failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use(cors());
 app.use(express.json());
 
