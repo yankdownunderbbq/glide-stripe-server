@@ -19,19 +19,24 @@ const GLIDE_TERMINAL_WEBHOOK_TOKEN = process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN;
 
 function sendToGlide(payload, type = 'quote') {
   console.log('sendToGlide called');
-  const url =
-    type === 'terminal'
-      ? process.env.GLIDE_TERMINAL_WEBHOOK_URL
+  
+  const url = 
+    type === 'terminal' 
+      ? process.env.GLIDE_TERMINAL_WEBHOOK_URL 
       : process.env.GLIDE_QUOTE_WEBHOOK_URL;
 
-  const token =
-    type === 'terminal'
-      ? process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN
+  const token = 
+    type === 'terminal' 
+      ? process.env.GLIDE_TERMINAL_WEBHOOK_TOKEN 
       : process.env.GLIDE_QUOTE_WEBHOOK_TOKEN;
 
-  //debug logs
+  if (!url || !token) {
+    console.error('🚫 Missing URL or token for Glide webhook.');
+    return Promise.reject(new Error('Missing Glide webhook configuration.'));
+  }
+
   console.log('📡 Glide webhook URL:', url);
-console.log('🔐 Glide token:', token ? 'Present ✅' : 'Missing ❌');
+  console.log('🔐 Glide token:', token ? 'Present ✅' : 'Missing ❌');
 
   return axios.post(url, payload, {
     headers: {
