@@ -293,6 +293,7 @@ app.post('/terminal-charge', express.json(), async (req, res) => {
 
     case 'terminal.reader.action_failed':
       handleReaderError(event.data.object);
+      handleTerminalEvent(event);
       break;
 
     default:
@@ -392,9 +393,51 @@ function handlePaymentCanceled(paymentIntent) {
   .catch(err => console.error('❌ Failed to send cancellation to Glide:', err.message));
 }
 
-function handleReaderError(data) {
-  console.log('🚨 Terminal reader error:', data);
-  // You could optionally notify Glide or store logs elsewhere
+async function handleTerminalEvent(event) {
+  const eventType = event.type;
+
+  if (
+    eventType === 'payment_intent.payment_failed' ||
+    eventType === 'terminal.reader.action_failed'
+  ) {
+    try {
+      // Extract paymentIntent ID from event
+      const paymentIntentId =
+        event.data.object?.payment_intent ||
+        event.data.object?.action?.process_payment_intent?.payment_intent;
+
+      if (!paymentIntentId) {
+        console.warn('⚠️ No payment_intent ID found in event:', event.id);
+        return;
+      }
+
+      // Fetch full PaymentIntent from Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      console.log(`📥 Fetched PaymentIntent ${paymentIntentId} for failure handling`);
+
+      // Run your existing logic
+      handlePaymentFailure(paymentIntent);
+    } catch (error) {
+      console.error('❌ Error handling failed payment:', error.message);
+    }
+  }
+}
+
+function handleReaderError(reader) {
+  const failure = reader.action?.failure_message || 'Unknown error';
+  const failureCode = reader.action?.failure_code || 'unknown_error';
+  const paymentIntentId = reader.action?.process_payment_intent?.payment_intent;
+
+  console.warn('🚨 Terminal reader error:', {
+    reader_id: reader.id,
+    failureCode,
+    failure
+  });
+
+  if (paymentIntentId) {
+    console.log(`↪️ This relates to PaymentIntent: ${paymentIntentId}`);
+  }
 }
 
 //basic route handler
