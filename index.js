@@ -396,11 +396,17 @@ function handlePaymentSuccess(paymentIntent) {
     quote_id: isQuote ? metadata.quote_id : null,
     order_id: isOrder ? metadata.order_id : null,
     timestamp: new Date().toISOString()
+
+    console.log('🧾 Metadata:', metadata);
+    console.log('💡 isQuote:', isQuote, 'isOrder:', isOrder);
   };
 
 sendToGlide(payload, 'terminal')
   .then(() => console.log(`✅ Sent success to Glide for order: ${payload.order_id}`))
   .catch(err => console.error('❌ Failed to send success to Glide:', err.message));
+
+  console.log(`🚀 Payload source: ${payload.source}`);
+  console.log(`🔗 Target endpoint: ${endpoint}`);
 }
 
 function handlePaymentFailure(paymentIntent) {
