@@ -305,39 +305,26 @@ app.post('/terminal-charge', express.json(), async (req, res) => {
 
 app.post('/terminal-cancel', express.json(), async (req, res) => {
   console.log('📡 Received request: POST /terminal-cancel');
-  console.log('📦 Cancel payload:', JSON.stringify(req.body, null, 2));
+  const { reader_id, session_patch_id } = req.body;
 
-  const { reader_id, payment_intent_id, session_patch_id } = req.body;
-
-  // 🔐 Shared secret check
+  // Validate secret
   if (session_patch_id !== process.env.GLIDE_SHARED_SECRET) {
-    console.warn('🔒 Unauthorized attempt to access /terminal-cancel');
+    console.warn('🔒 Unauthorized attempt to cancel terminal action');
     return res.status(403).json({ error: 'Unauthorized request — invalid secret' });
   }
 
+  // Validate reader_id
   if (!reader_id) {
-    return res.status(400).json({ error: 'Missing required field: reader_id' });
+    return res.status(400).json({ error: 'Missing reader_id' });
   }
 
   try {
-    // 1. Cancel reader action
-    const readerResult = await stripe.terminal.readers.cancelAction(reader_id);
-    console.log(`🛑 Cancelled reader action on ${reader_id}`);
-
-    // 2. Cancel payment intent if provided
-    let cancelResult = null;
-    if (payment_intent_id) {
-      cancelResult = await stripe.paymentIntents.cancel(payment_intent_id);
-      console.log(`❌ Cancelled PaymentIntent: ${payment_intent_id}`);
-    }
-
-    res.status(200).json({
-      message: 'Reader and (optional) payment intent cancelled successfully',
-      readerResult,
-      cancelResult
-    });
+    // Cancel the current action
+    const result = await stripe.terminal.readers.cancelAction(reader_id);
+    console.log(`❌ Canceled action on reader (${reader_id})`);
+    res.status(200).json({ success: true, result });
   } catch (err) {
-    console.error('❌ Cancel failed:', err.message);
+    console.error('❌ Failed to cancel action:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
