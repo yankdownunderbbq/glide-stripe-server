@@ -414,10 +414,11 @@ function handlePaymentSuccess(paymentIntent) {
   const type = isOrder ? 'terminal' : 'quote';
 
   sendToGlide(payload, type)
-.then(() => {
-  const id = payload.quote_id || payload.order_id || 'unknown';
-  console.log(`✅ Sent success to Glide for ${type}: ${id}`);
-});
+    .then(() => {
+      const id = payload.quote_id || payload.order_id || 'unknown';
+      console.log(`✅ Sent success to Glide for ${type}: ${id}`);
+    });
+}
 
 function handlePaymentFailure(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
