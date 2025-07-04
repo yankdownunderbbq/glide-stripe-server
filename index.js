@@ -417,7 +417,7 @@ function handlePaymentSuccess(paymentIntent) {
 .then(() => {
   const id = payload.quote_id || payload.order_id || 'unknown';
   console.log(`✅ Sent success to Glide for ${type}: ${id}`);
-})
+});
 
 function handlePaymentFailure(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
