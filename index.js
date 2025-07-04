@@ -215,7 +215,7 @@ app.post('/terminal-charge', express.json(), async (req, res) => {
   console.log('📦 Terminal charge payload:', JSON.stringify(req.body, null, 2));
   console.log('📬 /terminal-charge hit at', new Date().toISOString());
 
-  const { order_id, amount, reader_id, attempt_number, session_patch_id } = req.body;
+  const { order_id, quote_id, amount, reader_id, attempt_number, session_patch_id } = req.body;
 
   // 🔐 Shared secret check
   if (session_patch_id !== process.env.GLIDE_SHARED_SECRET) {
@@ -237,7 +237,8 @@ app.post('/terminal-charge', express.json(), async (req, res) => {
         payment_method_types: ['card_present'],
         capture_method: 'automatic',
         metadata: {
-          order_id,
+          ...(order_id && { order_id }),
+          ...(quote_id && { quote_id }),
           attempt_number: attempt_number.toString(),
           payment_type: 'terminal'
         }
