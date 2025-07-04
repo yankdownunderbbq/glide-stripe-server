@@ -77,6 +77,11 @@ app.post('/webhook-quotes', bodyParser.raw({ type: 'application/json' }), async 
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       const charge = paymentIntent.charges?.data?.[0];
 
+      // ✅ Add debug logs here
+      console.log('🧾 Quote Payment Intent:', paymentIntentId);
+      console.log('🔎 Quote ID from metadata:', quoteId);
+      console.log('💳 Payment Type:', paymentType);
+
       if (processedPayments.has(paymentIntent.id)) {
         console.log('🔁 Duplicate payment detected — skipping');
         res.status(200).send('Duplicate event ignored');
@@ -88,7 +93,7 @@ processedPayments.add(paymentIntent.id);
       // Send to Glide
       await fetch('https://go.glideapps.com/api/container/plugin/webhook-trigger/66t6tyCZFBicTWiSdBmK/a994a439-e558-4b2c-bf0f-0332482b2bf1', {
         method: 'POST',
-        headers: { 'Content-Type': 'axpplication/json', 
+        headers: { 'Content-Type': 'application/json', 
                    'Idempotency-Key': uuidv4() // One-off unique key
                  },
         body: JSON.stringify({
