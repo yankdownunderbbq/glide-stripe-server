@@ -414,9 +414,10 @@ function handlePaymentSuccess(paymentIntent) {
   const type = isOrder ? 'terminal' : 'quote';
 
   sendToGlide(payload, type)
-    .then(() => console.log(`✅ Sent success to Glide for ${type}: ${isOrder ? payload.order_id : payload.quote_id}`))
-    .catch(err => console.error('❌ Failed to send success to Glide:', err.message));
-}
+.then(() => {
+  const id = payload.quote_id || payload.order_id || 'unknown';
+  console.log(`✅ Sent success to Glide for ${type}: ${id}`);
+})
 
 function handlePaymentFailure(paymentIntent) {
   const metadata = paymentIntent.metadata || {};
