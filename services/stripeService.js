@@ -200,6 +200,12 @@ async function refundPaymentIntent(req, res) {
 
 // === Helpers for Terminal Webhook Events ===
 async function handlePaymentSuccess(paymentIntent) {
+  if (processedPayments.has(paymentIntent.id)) {
+    console.log('🔁 Duplicate success detected — skipping', paymentIntent.id);
+    return;
+  }
+  processedPayments.add(paymentIntent.id);
+    
   const metadata = paymentIntent.metadata || {};
 
   const payload = {
@@ -221,6 +227,11 @@ async function handlePaymentSuccess(paymentIntent) {
 }
 
 async function handlePaymentFailure(paymentIntent) {
+    if (processedPayments.has(paymentIntent.id)) {
+    console.log('🔁 Duplicate failure detected — skipping', paymentIntent.id);
+    return;
+  }
+  processedPayments.add(paymentIntent.id);
   const metadata = paymentIntent.metadata || {};
 
   const payload = {
@@ -244,6 +255,11 @@ async function handlePaymentFailure(paymentIntent) {
 }
 
 async function handlePaymentCanceled(paymentIntent) {
+    if (processedPayments.has(paymentIntent.id)) {
+    console.log('🔁 Duplicate cancellation detected — skipping', paymentIntent.id);
+    return;
+  }
+  processedPayments.add(paymentIntent.id);
   const metadata = paymentIntent.metadata || {};
 
   const payload = {
